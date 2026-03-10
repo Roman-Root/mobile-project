@@ -7,42 +7,77 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Properties;
 
 public class MyDriverProvider implements WebDriverProvider {
+
+    private static final Properties config = loadConfig();
+
+    private static Properties loadConfig() {
+        Properties props = new Properties();
+        String configFile = "config.properties";
+        try (InputStream is = MyDriverProvider.class.getClassLoader().getResourceAsStream(configFile)) {
+            if (is == null) {
+                throw new RuntimeException("Configuration file not found: " + configFile);
+            }
+            props.load(is);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load configuration: " + configFile, e);
+        }
+        return props;
+    }
+
     @Override
     public WebDriver createDriver(@Nonnull Capabilities capabilities) {
-        String appPath = System.getProperty("user.dir") + File.separator + "apps" + File.separator + "vk_video.apk";
-        File appFile = new File(appPath);
 
+        String configKey = System.getProperty("app.config", "vkvideo");
+
+        String prefix = configKey + ".";
+
+        String platformVersion = getRequiredProperty(prefix + "version");
+        String deviceName = getRequiredProperty(prefix + "device");
+        String appPath = getRequiredProperty(prefix + "path");
+        String appPackage = getRequiredProperty(prefix + "package");
+        String appActivity = getRequiredProperty(prefix + "activity");
+
+        File appFile = new File(appPath);
         if (!appFile.exists()) {
-            throw new RuntimeException("APK не найден: " + appPath);
+            throw new RuntimeException("APK not found at path: " + appPath);
         }
-        System.out.println("DEBUG: APK: " + appFile.getAbsolutePath());
 
         UiAutomator2Options options = new UiAutomator2Options();
 
         options.setPlatformName("Android")
-                .setPlatformVersion("11")
-                .setDeviceName("emulator-5554")
+                .setPlatformVersion(platformVersion)
+                .setDeviceName(deviceName)
                 .setAutomationName("UiAutomator2")
                 .setApp(appFile.getAbsolutePath())
-                .setAppPackage("com.vk.vkvideo")
-                .setAppActivity("com.vk.video.screens.main.MainActivity")
+                .setAppPackage(appPackage)
+                .setAppActivity(appActivity)
                 .setNoReset(false)
-                .setFullReset(true)
+                .setFullReset(false)
                 .setAutoGrantPermissions(true)
                 .setAppWaitForLaunch(false)
                 .setNewCommandTimeout(Duration.ofSeconds(180))
                 .setAdbExecTimeout(Duration.ofSeconds(60));
 
         try {
-            System.out.println("DEBUG: start sessions...");
             return new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Error URL Appium", e);
+            throw new RuntimeException("Invalid Appium server URL", e);
         }
+    }
+
+    private String getRequiredProperty(String key) {
+        String value = config.getProperty(key);
+        if (value == null) {
+            throw new RuntimeException("Required configuration parameter is missing: " + key);
+        }
+        return value;
     }
 }

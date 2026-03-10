@@ -1,51 +1,65 @@
 package pages;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.appium.SelenideAppiumElement;
+import com.google.common.collect.ImmutableMap;
 import io.appium.java_client.AppiumBy;
 import java.time.Duration;
-
 import static com.codeborne.selenide.appium.SelenideAppium.$;
 
 public class VkVideoPage {
 
     private final SelenideAppiumElement firstVideo = $(AppiumBy.xpath(
-            "//android.widget.ImageView[@resource-id='com.vk.vkvideo:id/preview' or " +
-                    "@resource-id='com.vk.vkvideo:id/thumb' or " +
-                    "contains(@resource-id, 'cover') or contains(@resource-id, 'thumbnail')]"
+            "//android.widget.ImageView[contains(@resource-id, 'preview') or " +
+                    "contains(@resource-id, 'thumb') or contains(@resource-id, 'cover')]"
     ));
 
+    private final SelenideAppiumElement currentTime = $(AppiumBy.id("com.vk.vkvideo:id/current_progress"));
+
+    private final SelenideAppiumElement videoViewContainer = $(AppiumBy.id("com.vk.vkvideo:id/videoViewContainer"));
+
     public void waitForFeedToLoad() {
-        firstVideo.shouldBe(Condition.visible.because(
-                "The video recommendations feed was not loaded within 40 seconds. " +
-                        "Potential causes include: absence of internet connection, required user authorization, or an internal application error"
-        ), Duration.ofSeconds(40));
+        firstVideo.shouldBe(Condition.visible, Duration.ofSeconds(40));
     }
 
     public void playRandomVideo() {
         waitForFeedToLoad();
-
-        if (!firstVideo.is(Condition.enabled)) {
-            firstVideo.parent().shouldBe(Condition.visible).click();
-        } else {
-            firstVideo.click();
-        }
+        firstVideo.click();
     }
 
     public void waitForPlayerToAppear() {
+        videoViewContainer.shouldBe(Condition.visible, Duration.ofSeconds(20));
+    }
 
-        $(AppiumBy.id("com.vk.vkvideo:id/player_control"))
-                .shouldBe(Condition.visible.because(
-                        "The player did not open within 20 seconds after clicking on the video"
-                ), Duration.ofSeconds(20));
+    private void tapVideoCenter() {
+        Selenide.executeJavaScript("mobile: clickGesture", ImmutableMap.of(
+                "x", 540,
+                "y", 400
+        ));
     }
 
     public boolean isVideoPlaying() {
-        return $(AppiumBy.xpath(
-                "//*[contains(@resource-id, 'seek') or contains(@resource-id, 'progress') or contains(@resource-id, 'bar')]"
-        ))
-                .shouldBe(Condition.visible, Duration.ofSeconds(20))
-                .isDisplayed();
-    }
+        try {
+            tapVideoCenter();
 
+            currentTime.shouldBe(Condition.visible, Duration.ofSeconds(15));
+            String timeStart = currentTime.getText().split(" ")[0];
+
+            Selenide.sleep(10000);
+
+            tapVideoCenter();
+
+            String timeEnd = currentTime.getText().split(" ")[0];
+
+            boolean isMoving = !timeStart.equals(timeEnd);
+            System.out.println("DEBUG: Checking video: [" + timeStart + "] -> [" + timeEnd + "]");
+
+            return isMoving;
+
+        } catch (Throwable e) {
+            System.err.println("Video playback check failed: " + e.getMessage());
+            return false;
+        }
+    }
 }

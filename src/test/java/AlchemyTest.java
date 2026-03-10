@@ -6,10 +6,15 @@ public class AlchemyTest extends BaseTest {
     AlchemyPage alchemyPage = new AlchemyPage();
 
     @Test
-    void testHintsAccumulation() {
-        alchemyPage.startGame();
-        alchemyPage.requestAdHint();
+    void testVideoPlaybackLogic() {
+        openApp("alchemy");
 
-        alchemyPage.checkHintsCount("4");
+        alchemyPage.startGame();
+
+        alchemyPage.openAddHintsMenu();
+
+        alchemyPage.watchAdForHint();
+
+        alchemyPage.verifyHintsCount("4");
     }
 }
