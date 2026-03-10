@@ -53,12 +53,12 @@ public class VkVideoPage {
             String timeEnd = currentTime.getText().split(" ")[0];
 
             boolean isMoving = !timeStart.equals(timeEnd);
-            System.out.println("DEBUG: Checking video: [" + timeStart + "] -> [" + timeEnd + "]");
+            System.out.println("DEBUG: Checking video : [" + timeStart + "] -> [" + timeEnd + "]");
 
             return isMoving;
 
         } catch (Throwable e) {
-            System.err.println("Video playback check failed: " + e.getMessage());
+            System.err.println("Video playback check failed : " + e.getMessage());
             return false;
         }
     }

@@ -24,7 +24,7 @@ public class VkVideoTest extends BaseTest {
             System.out.println("Positive: Video is playing.");
 
         } catch (Throwable e) {
-            System.err.println("Negative: Video playback failed! Reason: " + e.getMessage());
+            System.err.println("Negative: Video playback failed! Reason : " + e.getMessage());
             throw e;
         }
     }

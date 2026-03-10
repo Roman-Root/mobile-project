@@ -47,7 +47,7 @@ public class MyDriverProvider implements WebDriverProvider {
 
         File appFile = new File(appPath);
         if (!appFile.exists()) {
-            throw new RuntimeException("APK not found at path: " + appPath);
+            throw new RuntimeException("APK not found at path : " + appPath);
         }
 
         UiAutomator2Options options = new UiAutomator2Options();
