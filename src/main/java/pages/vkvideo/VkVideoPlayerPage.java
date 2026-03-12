@@ -1,4 +1,4 @@
-package pages;
+package pages.vkvideo;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
@@ -6,27 +6,14 @@ import com.codeborne.selenide.appium.SelenideAppiumElement;
 import com.google.common.collect.ImmutableMap;
 import io.appium.java_client.AppiumBy;
 import java.time.Duration;
+
 import static com.codeborne.selenide.appium.SelenideAppium.$;
+import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 
-public class VkVideoPage {
-
-    private final SelenideAppiumElement firstVideo = $(AppiumBy.xpath(
-            "//android.widget.ImageView[contains(@resource-id, 'preview') or " +
-                    "contains(@resource-id, 'thumb') or contains(@resource-id, 'cover')]"
-    ));
+public class VkVideoPlayerPage {
 
     private final SelenideAppiumElement currentTime = $(AppiumBy.id("com.vk.vkvideo:id/current_progress"));
-
     private final SelenideAppiumElement videoViewContainer = $(AppiumBy.id("com.vk.vkvideo:id/videoViewContainer"));
-
-    public void waitForFeedToLoad() {
-        firstVideo.shouldBe(Condition.visible, Duration.ofSeconds(40));
-    }
-
-    public void playRandomVideo() {
-        waitForFeedToLoad();
-        firstVideo.click();
-    }
 
     public void waitForPlayerToAppear() {
         videoViewContainer.shouldBe(Condition.visible, Duration.ofSeconds(20));
@@ -41,24 +28,24 @@ public class VkVideoPage {
 
     public boolean isVideoPlaying() {
         try {
-            tapVideoCenter();
+            waitForPlayerToAppear();
 
+            tapVideoCenter();
             currentTime.shouldBe(Condition.visible, Duration.ofSeconds(15));
             String timeStart = currentTime.getText().split(" ")[0];
 
             Selenide.sleep(10000);
 
             tapVideoCenter();
-
             String timeEnd = currentTime.getText().split(" ")[0];
 
             boolean isMoving = !timeStart.equals(timeEnd);
-            System.out.println("DEBUG: Checking video : [" + timeStart + "] -> [" + timeEnd + "]");
+            System.out.println("DEBUG: Video progress: [" + timeStart + "] -> [" + timeEnd + "]");
 
             return isMoving;
 
         } catch (Throwable e) {
-            System.err.println("Video playback check failed : " + e.getMessage());
+            System.err.println("Playback check failed: " + e.getMessage());
             return false;
         }
     }

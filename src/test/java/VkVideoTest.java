@@ -2,29 +2,29 @@ package test;
 
 import config.BaseTest;
 import org.junit.jupiter.api.Test;
-import pages.VkVideoPage;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static pages.Pages.*;
 
 public class VkVideoTest extends BaseTest {
 
     @Test
     void testVideoPlaybackLogic() {
         openApp("vkvideo");
-        VkVideoPage videoPage = new VkVideoPage();
 
         try {
-            videoPage.waitForFeedToLoad();
+            vkStartPage.waitForFeedToLoad();
+            vkStartPage.playRandomVideo();
 
-            videoPage.playRandomVideo();
-            videoPage.waitForPlayerToAppear();
+            vkPlayerPage.waitForPlayerToAppear();
 
-            boolean playing = videoPage.isVideoPlaying();
+            boolean playing = vkPlayerPage.isVideoPlaying();
 
             assertTrue(playing, "Video playback failed: timer is not moving");
-            System.out.println("Positive: Video is playing.");
+            System.out.println("Positive: Video is playing correctly.");
 
         } catch (Throwable e) {
-            System.err.println("Negative: Video playback failed! Reason : " + e.getMessage());
+            System.err.println("Negative: Test failed! Reason: " + e.getMessage());
             throw e;
         }
     }
