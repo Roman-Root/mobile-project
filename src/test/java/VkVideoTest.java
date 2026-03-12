@@ -1,27 +1,31 @@
+package test;
+
 import config.BaseTest;
 import org.junit.jupiter.api.Test;
-import pages.VkVideoPage;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static pages.Pages.*;
 
 public class VkVideoTest extends BaseTest {
 
-    private final VkVideoPage videoPage = new VkVideoPage();
-
     @Test
     void testVideoPlaybackLogic() {
+        openApp("vkvideo");
 
-        videoPage.waitForFeedToLoad();
-        videoPage.playRandomVideo();
-        videoPage.waitForPlayerToAppear();
+        try {
+            vkStartPage.waitForFeedToLoad();
+            vkStartPage.playRandomVideo();
 
-        boolean isPlaying = videoPage.isVideoPlaying();
+            vkPlayerPage.waitForPlayerToAppear();
 
-        assertTrue(isPlaying,
-                "Video playback failed to start. " +
-                        "Possible causes: prolonged loading, default pause state, " +
-                        "network issues, invalid seek-zone locator, or application error."
-        );
+            boolean playing = vkPlayerPage.isVideoPlaying();
 
-        System.out.println("Test passed: video playback confirmed.");
+            assertTrue(playing, "Video playback failed: timer is not moving");
+            System.out.println("Positive: Video is playing correctly.");
+
+        } catch (Throwable e) {
+            System.err.println("Negative: Test failed! Reason: " + e.getMessage());
+            throw e;
+        }
     }
 }

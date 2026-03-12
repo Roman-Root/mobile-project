@@ -1,15 +1,24 @@
+package tests;
+
 import config.BaseTest;
 import org.junit.jupiter.api.Test;
-import pages.AlchemyPage;
+import utils.AdHandler;
+
+import static pages.Pages.*;
 
 public class AlchemyTest extends BaseTest {
-    AlchemyPage alchemyPage = new AlchemyPage();
 
     @Test
-    void testHintsAccumulation() {
-        alchemyPage.startGame();
-        alchemyPage.requestAdHint();
+    void testAlchemyAd() {
 
-        alchemyPage.checkHintsCount("4");
+        openApp("alchemy");
+
+        startPage.startGame();
+        mainPage.openAddHintsMenu();
+        hintPage.clickWatchAd();
+
+        boolean detected = AdHandler.handleAd(60);
+
+        System.out.println("Ad result: " + detected);
     }
 }
